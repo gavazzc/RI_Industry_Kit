@@ -1,0 +1,36 @@
+---
+RecipeFormatVersion: 2020-01-25
+ComponentName: com.example.Exporter
+ComponentVersion: '1.0.0'
+ComponentDescription: Exporter component for Greengrass v2
+ComponentPublisher: "-"
+ComponentConfiguration:
+  DefaultConfiguration:
+    db_path: '{com.example.Store:configuration:/db_path}'
+    s3_bucket: ggv2-example-component-artifacts
+    accessControl:
+      aws.greengrass.ipc.pubsub:
+        com.example.Exporter:pubsub:1:
+          policyDescription: Allows access to subscribe to all topics.
+          operations:
+            - aws.greengrass#SubscribeToTopic
+          resources:
+            - "*"
+ComponentDependencies:
+  aws.greengrass.TokenExchangeService:
+    VersionRequirement: '^2.0.0'
+    DependencyType: HARD
+  com.example.Store:
+    VersionRequirement: ^1.0.0
+    DependencyType: HARD
+Manifests:
+  - Platform:
+      os: linux
+    Artifacts:
+      - URI: s3://$BUCKETNAME$/$PATHZIP$
+        Unarchive: ZIP
+    Lifecycle:
+      Install:
+        Script: "curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \n python3 get-pip.py \n pip3 --version \n pip3 install --user awsiotsdk \n pip3 install --user boto3"
+      Run: |
+        python3 -u {artifacts:decompressedPath}/exporter/exporter.py '{configuration:/db_path}' '{configuration:/s3_bucket}'

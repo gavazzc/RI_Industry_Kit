@@ -1,0 +1,23 @@
+---
+RecipeFormatVersion: '2020-01-25'
+ComponentName: com.example.djisdk
+ComponentVersion: 1.0.0
+ComponentDescription: A component that publishes messages.
+ComponentPublisher: Amazon
+ComponentConfiguration:
+  DefaultConfiguration:
+    accessControl:
+      aws.greengrass.ipc.pubsub:
+        com.example.djisdk:pubsub:1:
+          policyDescription: Allows access to publish/subscribe to all topics.
+          operations:
+          - aws.greengrass#PublishToTopic
+          - aws.greengrass#SubscribeToTopic
+          resources:
+          - "*"
+Manifests:
+- Artifacts:
+    - URI: s3://$BUCKETNAME$/$PATHZIP$
+      Unarchive: ZIP
+  Lifecycle:
+    Run: "chmod ugo+rwx -R {artifacts:decompressedPath}/djisdk/greengrass-publisher && {artifacts:decompressedPath}/djisdk/greengrass-publisher {artifacts:decompressedPath}/djisdk/UserConfig.txt"

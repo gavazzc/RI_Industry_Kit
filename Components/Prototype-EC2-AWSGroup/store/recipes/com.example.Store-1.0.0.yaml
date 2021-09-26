@@ -1,0 +1,32 @@
+---
+RecipeFormatVersion: 2020-01-25
+ComponentName: com.example.Store
+ComponentVersion: '1.0.0'
+ComponentDescription: Store component for Greengrass v2
+ComponentPublisher: "-"
+ComponentConfiguration:
+  DefaultConfiguration:
+    db_path: "/home/ggc_user"
+    accessControl:
+      aws.greengrass.ipc.pubsub:
+        com.example.Store:pubsub:1:
+          policyDescription: Allows access to subscribe to all topics.
+          operations:
+            - aws.greengrass#SubscribeToTopic
+          resources:
+            - "*"
+Manifests:
+  - Platform:
+      os: linux
+    Artifacts:
+      - URI: s3://$BUCKETNAME$/$PATHZIP$
+        Unarchive: ZIP
+    #Bootstrap:
+      #Script: "sudo apt-get update \n sudo apt-get install -y build-essential libssl-dev libcrypto++-dev"
+      #RequiresPrivilege: true
+    Lifecycle:
+      Install:
+        Script: "curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \n python3 get-pip.py \n pip3 --version \n pip3 install --user awsiotsdk"
+        #RequiresPrivilege: true
+      Run: |
+        python3 -u {artifacts:decompressedPath}/store/store.py '{configuration:/db_path}'
