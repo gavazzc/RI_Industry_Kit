@@ -184,7 +184,7 @@ def create_distribution(d, g_name):
     print(d)
 
 cpath = "Components/"
-gname_prefix = "arn:aws:iot:eu-central-1:003536950290:thinggroup/"
+gname_prefix = "arn:aws:iot:eu-central-1:**************:thinggroup/"
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -202,8 +202,8 @@ if(not path.exists(rootdir)):
 
 session = boto3.Session(
     region_name="eu-central-1",
-    aws_access_key_id="",
-    aws_secret_access_key="",
+    aws_access_key_id='',
+    aws_secret_access_key=''
 )
 
 gg_client = session.client("greengrassv2")
