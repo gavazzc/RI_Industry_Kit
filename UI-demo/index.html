@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Demo AWS Prototyping</title>
+        <style>
+        .button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            margin: 4px 2px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+        .button:active {
+            opacity:0.6;
+        }
+        </style>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    </head>
+    <body style="padding:40px;">
+
+        <h2>AWS Protoyping - Demo</h2>
+        <p style="margin-bottom:0px;">Inspection name</p>
+        <input type="text" id="start_insp" placeholder="Insert the inspection ID" value="aws-demo-1" style="font-size: 18px;" readonly />
+        <br/><br/>
+        <p style="margin-bottom:0px;">The button allows you to <b>create</b> and <b>start</b> the inspection on the drone</p>
+        <button class="button" onclick="start_data()"><b>CREATE</b></button>
+        <br/>
+        <p style="margin-bottom:0px;">These buttons allows you to view the <b>latest frame</b> analyzed by the drone</p>
+        <button class="button" style="background-color: #939393;" onclick="get_latest_frame()"><b>VIEW CURRENT FRAME</b></button>
+        <br/>
+        <p style="margin-bottom:0px;">The button allows you to view <b>all frames</b> analyzed by the drone</p>
+        <button class="button" style="background-color: #008CBA;" onclick="get_all_frames()"><b>VIEW ALL FRAMES</b></button>
+        <br/>
+        <p style="margin-bottom:0px;">The button allows you to <b>upload</b> the telemetries/inferenced data on the <b>cloud</b> in real-time</p>
+        <button class="button" style="background-color: #2c2b2b;" onclick="export_data()"><b>EXPORT</b></button>
+        <br/>
+        <p style="margin-bottom:0px;">The button allows you to <b>stop</b> the inspection on the drone</p>
+        <button class="button" style="background-color: #f44336;" onclick="stop_data()"><b>STOP</b></button>
+        <br/>
+
+        <script>
+            function start_data(){ 
+                var inspection_id = document.getElementById('start_insp').value;
+                var settings = {
+                    'cache': false,
+                    'dataType': "jsonp",
+                    "async": true,
+                    "crossDomain": true,
+                    "url": "http://10.21.95.66:8000/inspection/start?inspection_id="+inspection_id,
+                    "method": "GET",
+                    "headers": {
+                        "accept": "application/json",
+                        "Access-Control-Allow-Origin":"*"
+                    }
+                }
+
+                $.ajax(settings).done(function (response) {
+                    console.log(response);
+                });
+            }
+
+            function stop_data(e){ 
+                var settings = {
+                    'cache': false,
+                    'dataType': "jsonp",
+                    "async": true,
+                    "crossDomain": true,
+                    "url": "http://10.21.95.66:8000/inspection/stop",
+                    "method": "GET",
+                    "headers": {
+                        "accept": "application/json",
+                        "Access-Control-Allow-Origin":"*"
+                    }
+                }
+
+                $.ajax(settings).done(function (response) {
+                    console.log(response);
+                });
+            }
+
+            function get_all_frames(e){ 
+                var inspection_id = document.getElementById('start_insp').value;
+                window.open("demo1.html", '_blank');
+            }
+
+            function get_latest_frame(e){ 
+                var inspection_id = document.getElementById('start_insp').value;
+                window.open("demo2.html", '_blank');
+            }
+
+            function export_data(e){ 
+                var inspection_id = document.getElementById('start_insp').value;
+                var settings = {
+                    'cache': false,
+                    'dataType': "jsonp",
+                    "async": true,
+                    "crossDomain": true,
+                    "url": "http://10.21.95.66:8000/data/export?inspection_id="+inspection_id,
+                    "method": "GET",
+                    "headers": {
+                        "accept": "application/json",
+                        "Access-Control-Allow-Origin":"*"
+                    }
+                }
+
+                $.ajax(settings).done(function (response) {
+                    console.log(response);
+                });
+            }
+
+
+            /*function publish_tel(e){ 
+                var settings = {
+                    'cache': false,
+                    'dataType': "jsonp",
+                    "async": true,
+                    "crossDomain": true,
+                    "url": "http://10.21.95.66:8000/publishTest",
+                    "method": "GET",
+                    "headers": {
+                        "accept": "application/json",
+                        "Access-Control-Allow-Origin":"*"
+                    }
+                }
+                $.ajax(settings).done(function (response) {
+                    console.log(response);
+                });
+            }
+            function publish_img(e){ 
+                var settings = {
+                    'cache': false,
+                    'dataType': "json",
+                    "async": true,
+                    "crossDomain": true,
+                    "url": "http://10.21.95.66:8000/publishImageTest",
+                    "method": "GET",
+                    "headers": {
+                        "accept": "application/json",
+                        "Access-Control-Allow-Origin":"*"
+                    }
+                }
+                $.ajax(settings).done(function (response) {
+                    console.log(response);
+                });
+            }*/
+        </script>
+    </body>
+</html>
