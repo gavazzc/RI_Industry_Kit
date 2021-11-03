@@ -53,14 +53,6 @@ Exporter component receives export data command from the REST API /data/export?i
 
 Machine Learning Inference component receives images from Capture component and runs a custom ML model for these images. The ML inference result is sent to Store component for storing the data in the current inspection.
 
-### Custom ML
-
-This component is used in the case where Greengrass runs in a computer. It watches "/home/ggc_user/djiimages" folder for changes. When there is a new file in this folder, Machine Learning Inference runs for this image.
-
-### FlightRecord
-
-DJI has a propriety format which is called as FlightRecord file. This component is used in the case where Greengrass runs in a computer. It watches "/home/ggc_user/flightdata" folder for changes. When there is a new flight record file in this folder, it is parsed to retrieve telemetry and image data. This component is running a nodejs script that is developed for this purpose. The recipe installs a public repository to the device for parsing the DJI's flight record files.
-
 ## How to run the components
 
 In order to test the components, greengrass-cli needs to be installed with AWS Greengrass. Please see : https://docs.aws.amazon.com/greengrass/v2/developerguide/install-gg-cli.html
@@ -70,6 +62,28 @@ For each component that needs to be installed, enter to the folder of the compon
 `sudo /greengrass/v2/bin/greengrass-cli deployment create --recipeDir recipes --artifactDir artifacts --merge "com.example.HelloWorld=1.0.0"`
 
 You need to change com.example.HelloWorld=1.0.0 with the component name and version. The name and version of the component must match the name recipe file under recipes folder of the component. Please see : https://docs.aws.amazon.com/greengrass/v2/developerguide/create-components.html
+
+## Automatic component upload on the cloud
+In order to automatically load the components to the cloud, you need to run the *create_components* python script (Python 3.*.*):
+
+`python create_components.py --cmps_path PATH_OF_COMPONENTS_DIR`
+
+It is possible to specify the path of the folder containing the components to be loaded. If not specified, the default one will be used (*Components/*). Each folder must be named with the component name.
+
+Docs: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/greengrassv2.html#GreengrassV2.Client.create_component_version
+Docs : https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/greengrassv2.html#GreengrassV2.Client.create_deployment
+
+### REQUIREMENTS
+All dependencies needed to run the file can be installed with the following command:
+
+`pip install -r requirements.txt`
+
+The script uses the *boto3* library to interact with the cloud platform, which requires credentials to access the AWS services in question (**S3 bucket** and **GreenGrass**). You can define them through the following command:
+
+`export AWS_ACCESS_KEY_ID=***************`
+
+`export AWS_SECRET_ACCESS_KEY=***************`
+
 
 ## SageMaker Edge Manager
 
