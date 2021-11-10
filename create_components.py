@@ -220,8 +220,8 @@ if(not path.exists(rootdir)):
 
 session = boto3.Session(
     region_name="eu-central-1",
-    aws_access_key_id="",
-    aws_secret_access_key="",
+    aws_access_key_id='',
+    aws_secret_access_key=''
 )
 
 gg_client = session.client("greengrassv2")
