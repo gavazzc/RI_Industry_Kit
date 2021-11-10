@@ -32,5 +32,7 @@ Manifests:
     Lifecycle:
       Install:
         Script: "curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \n python3 get-pip.py \n pip3 --version \n pip3 install --user awsiotsdk \n pip3 install --user boto3"
-      Run: |
-        python3 -u {artifacts:decompressedPath}/exporter/exporter.py '{configuration:/db_path}' '{configuration:/s3_bucket}'
+        RequiresPrivilege: true
+      Run:
+        Script: "python3 -u {artifacts:decompressedPath}/exporter/exporter.py '{configuration:/db_path}' '{configuration:/s3_bucket}'"
+        RequiresPrivilege: true

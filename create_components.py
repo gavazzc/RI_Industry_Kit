@@ -83,7 +83,7 @@ def create_recipes_with_artifacts(res, name):
             recipe = recipe.replace("$COMPONENT_VERSION$", latest_version)
             recipe = recipe.replace("$PATHZIP$", res)
 
-            recipe = yaml.load(recipe)
+            recipe = yaml.safe_load(recipe)
             recipe["ComponentVersion"]=latest_version
             d[c_name] = {'componentVersion': recipe["ComponentVersion"]}
             general_d[c_name] = {'componentRecipes': component_recipe, 'componentVersion': recipe["ComponentVersion"]}
@@ -112,8 +112,8 @@ def create_recipes_without_artifacts(name):
             with open(os.path.join(recipes_path, component_recipe)) as f:
                 recipe = f.read()
             recipe = recipe.replace("$COMPONENT_VERSION$", latest_version)
-
-            recipe = yaml.load(recipe)
+            print(recipe)
+            recipe = yaml.safe_load(recipe)
             recipe["ComponentVersion"]=latest_version
             d[c_name] = {'componentVersion': recipe["ComponentVersion"]}
             general_d[c_name] = {'componentRecipes': component_recipe, 'componentVersion': recipe["ComponentVersion"]}
@@ -165,6 +165,24 @@ def create_distribution(d, g_name):
     d['aws.greengrass.Cli'] = {'componentVersion': '2.3.0'}
     #d['aws.greengrass.SecureTunneling'] = {'componentVersion': '1.0.3'}
     d['aws.greengrass.Nucleus'] = {'componentVersion': '2.3.0'}
+    target=gname_prefix+g_name
+    print("Target", target)
+    
+    iot = boto3.client('iot')
+    thing_groups = iot.list_thing_groups()["thingGroups"]
+    if not any(target in s for s in thing_groups):
+        print("No thing group found, creating one")
+        response = iot.create_thing_group(
+            thingGroupName=g_name,
+            tags=[
+                {
+                    'Key': 'Name',
+                    'Value': g_name
+                },
+            ]
+        )
+        print("Thing group ", target, " created")
+        
     response = gg_client.create_deployment(
             targetArn=gname_prefix+g_name,
             deploymentName='InstancesGroupAWS',
@@ -180,11 +198,12 @@ def create_distribution(d, g_name):
                 }
             }
         )
-    print("\n\n")
-    print(d)
 
+
+#Start Script#
 cpath = "Components/"
-gname_prefix = "arn:aws:iot:eu-central-1:003536950290:thinggroup/"
+#TODO: Start make this parametric#
+gname_prefix = "arn:aws:iot:eu-central-1:351032530776:thinggroup/"
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -197,7 +216,6 @@ args = parser.parse_args()
 rootdir = args.cmps_path
 
 if(not path.exists(rootdir)):
-    print("The path is not valid.")
     exit(1)
 
 session = boto3.Session(
@@ -210,32 +228,35 @@ gg_client = session.client("greengrassv2")
 sts_client = session.client("sts")
 s3_client = session.client("s3")
 region = "eu-central-1"
-bucket = "ggv2-example-component-artifacts"
+#TODO: Create if not present, also add a unique id like the account id to avoid duplicates#
+bucket = "ggv2-ri-drones-component-artifacts"
 
 groups = os.listdir(rootdir)
+print(groups)
 for group in groups:
     d = {}
-    g = os.listdir(rootdir+"/"+group)
     print("\n\nPROCESSING GROUP:", group)
-    for component in g:
-        dir_path = os.path.dirname(os.path.realpath(__file__))+"/"+rootdir+"/"+group+"/"+component
-        artifacts_path = os.path.join(dir_path, "artifacts")
-        recipes_path = os.path.join(dir_path, "recipes")
+    dir_path = os.path.dirname(os.path.realpath(__file__))+"/"+rootdir+group
+    print("Working dir path", dir_path)
+    artifacts_path = os.path.join(dir_path, "artifacts")
+    print("Working artifact path", artifacts_path )
+    recipes_path = os.path.join(dir_path, "recipes")
+    print("Working recipe path", recipes_path)
 
-        build_dir_path = os.path.join(dir_path, "build")
-        build_artifacts_path = os.path.join(build_dir_path, "artifacts")
-        build_recipes_path = os.path.join(build_dir_path, "recipes")
+    build_dir_path = os.path.join(dir_path, "build")
+    build_artifacts_path = os.path.join(build_dir_path, "artifacts")
+    build_recipes_path = os.path.join(build_dir_path, "recipes")
 
-        shutil.rmtree(build_dir_path, ignore_errors=True, onerror=None)
+    shutil.rmtree(build_dir_path, ignore_errors=True, onerror=None)
 
-        if(os.path.exists(artifacts_path)):
-            res = create_artifacts(component)
-            create_recipes_with_artifacts(res, component)
-            create_components(component)
-        else:
-            create_recipes_without_artifacts(component)
-            create_components(component)
+    if(os.path.exists(artifacts_path)):
+        res = create_artifacts(group)
+        create_recipes_with_artifacts(res, group)
+        create_components(group)
+    else:
+        create_recipes_without_artifacts(group)
+        create_components(group)
 
-        list_processed_component.append(component)
+        list_processed_component.append(group)
 
     create_distribution(d, group)
