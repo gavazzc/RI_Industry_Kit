@@ -29,5 +29,5 @@ Manifests:
         Script: "sudo yum install python3-pip -y \n sudo yum install python-gunicorn -y \n python3 -m pip install starlette \n python3 -m pip install uvicorn \n python3 -m pip install gunicorn \n python3 -m pip install --user awsiotsdk"
         RequiresPrivilege: true
       Run:
-        Script: "/usr/local/bin/gunicorn -w 4 -k uvicorn.workers.UvicornWorker --log-level warning -b 0.0.0.0:8000 --env DB_PATH='{com.example.Store:configuration:/db_path}' rest:app --pythonpath {artifacts:decompressedPath}/restapi"
+        Script: "/usr/local/bin/gunicorn -w 4 -k uvicorn.workers.UvicornWorker --log-level info --capture-output --error-logfile='/greengrass/v2/logs/gunicorn.log' -b 0.0.0.0:443 --env DB_PATH='{com.example.Store:configuration:/db_path}' rest:app --pythonpath {artifacts:decompressedPath}/restapi --certfile {artifacts:decompressedPath}/restapi/rikit.com.crt --keyfile {artifacts:decompressedPath}/restapi/rikit.com.key --ca-certs {artifacts:decompressedPath}/restapi/riRootCA.crt"
         RequiresPrivilege: true

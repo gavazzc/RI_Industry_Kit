@@ -67,15 +67,17 @@ TIMEOUT = 10
 
 dbp = config('DB_PATH', default="NOTFOUND")
 
-print(f"DB_PATH from .env {dbp}")
-
 DB_PATH = environ.get('DB_PATH') #config('DB_PATH')
+
+print('Configuration in progress please wait..')
 
 ipc_client = awsiot.greengrasscoreipc.connect()
 
+print('ipclient configured', ipc_client)
+
 def publish(topic, payload):
     try:
-        print("publishing")
+        print("publishing!!!!!!!!!!")
         
         request = PublishToTopicRequest()
         request.topic = topic
@@ -122,6 +124,7 @@ async def homepage(request):
 # Inspection start/stop function. It handles http://host/inspection/{start/stop} path.
 # There must be an inspection_id in the query parameters for start.
 async def inspection(request):
+    print("publish inspection request received")
     command = request.path_params['command']
     inspection_id = "no_id"
     if "inspection_id" in request.query_params:
@@ -135,15 +138,18 @@ async def inspection(request):
     return JSONResponse({'topic': topic, 'payload': payload})
 
 async def publish_test_data(request):
+    print("publish test data request received")
     publish("store/command", json.dumps({"topic":"store/data","payload":test_payload}))
     return JSONResponse({'result': 'published'})
 
 async def publish_test_image(request):
+    print("publish test request received")
     publish("drone/image", json.dumps({"image_path":"/home/ggc_user/testimages/Rubi116_DJI_0176.jpg"}))
     return JSONResponse({'result': 'published'})
 
 async def get_data(request):
     # read files, merge, return
+    print("Get data request received")
     if not "inspection_id" in request.query_params:
         return JSONResponse({'error': 'inspection_id parameter must be passed.'})
     inspection_id = request.query_params["inspection_id"]
@@ -151,6 +157,7 @@ async def get_data(request):
     return JSONResponse({'data': ret})
 
 async def export_to_s3(request):
+    print("Export to S3 request received")
     if not "inspection_id" in request.query_params:
         return JSONResponse({'error': 'inspection_id parameter must be passed.'})
     inspection_id = request.query_params["inspection_id"]
