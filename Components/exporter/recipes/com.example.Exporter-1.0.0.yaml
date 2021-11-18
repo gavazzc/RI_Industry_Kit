@@ -7,7 +7,7 @@ ComponentPublisher: "-"
 ComponentConfiguration:
   DefaultConfiguration:
     db_path: '{com.example.Store:configuration:/db_path}'
-    s3_bucket: ggv2-example-component-artifacts
+    s3_bucket: ggv2-ri-drones-component-artifacts
     accessControl:
       aws.greengrass.ipc.pubsub:
         com.example.Exporter:pubsub:1:

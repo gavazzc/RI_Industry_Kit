@@ -40,13 +40,14 @@ def upload_folder_to_s3(inspection_id):
     print(f"Upload started")
     zip_path = zip_folder(inspection_id)
     print(f"zip file : {zip_path}")
+    print(f"s3 bucket : {s3_bucket}")
     object_name = f'inspections/{inspection_id}.zip'
     print(f"S3 object name : {object_name}")
     s3_client = boto3.client('s3')
     try:
         response = s3_client.upload_file(zip_path, s3_bucket, object_name)
         print(f"Upload result : {response}")
-    except ClientError as e:
+    except Exception as e:
         print(e)
     print(f"Removing zip file : {zip_path}")
     os.remove(zip_path)
