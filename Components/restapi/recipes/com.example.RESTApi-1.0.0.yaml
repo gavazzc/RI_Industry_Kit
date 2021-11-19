@@ -25,6 +25,8 @@ Manifests:
       - URI: s3://$BUCKETNAME$/$PATHZIP$
         Unarchive: ZIP
     Lifecycle:
+      setEnv:
+        IMAGE_DIR: '{artifacts:decompressedPath}/Images/'
       Install:
         Script: "sudo yum install python3-pip -y \n sudo yum install python-gunicorn -y \n python3 -m pip install starlette \n python3 -m pip install uvicorn \n python3 -m pip install gunicorn \n python3 -m pip install --user awsiotsdk"
         RequiresPrivilege: true

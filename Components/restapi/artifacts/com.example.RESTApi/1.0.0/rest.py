@@ -146,6 +146,14 @@ async def publish_test_image(request):
     print("publish test request received")
     publish("drone/image", json.dumps({"image_path":"/home/ggc_user/testimages/Rubi116_DJI_0176.jpg"}))
     return JSONResponse({'result': 'published'})
+    
+async def simulateDrone(request):
+    print("publish test request received")
+    with os.scandir('/greengrass/v2/packages/artifacts-unarchived/com.example.RESTApi/1.0.52/restapi/Images/') as it:
+        for entry in it:
+            if (entry.name.endswith(".jpg") or entry.name.endswith(".png")) and entry.is_file():
+                publish("drone/image", json.dumps({"image_path":entry.path}))
+    return JSONResponse({'result': 'published'})
 
 async def get_data(request):
     # read files, merge, return
@@ -172,7 +180,8 @@ routes = [
     Route("/data/get", endpoint=get_data),
     Route("/data/export", endpoint=export_to_s3),
     Route("/publishTest", endpoint=publish_test_data),
-    Route("/publishImageTest", endpoint=publish_test_image)
+    Route("/publishImageTest", endpoint=publish_test_image),
+    Route("/simulateDrone", endpoint=simulateDrone)
 ]
 
 app = Starlette(debug=True, routes=routes)

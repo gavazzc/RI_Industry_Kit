@@ -1,0 +1,57 @@
+---
+RecipeFormatVersion: 2020-01-25
+ComponentName: com.greengrass.SageMakerEdgeManager.AnomalyDetection
+ComponentVersion: '1.0.18'
+ComponentDescription: Inference component for Greengrass v2
+ComponentPublisher: "-"
+ComponentConfiguration:
+  DefaultConfiguration:
+    accessControl:
+      aws.greengrass.ipc.pubsub:
+        com.greengrass.SageMakerEdgeManager.AnomalyDetection:pubsub:1:
+          policyDescription: Allows access to subscribe to all topics.
+          operations:
+            - aws.greengrass#SubscribeToTopic
+            - aws.greengrass#PublishToTopic
+          resources:
+            - "*"
+Manifests:
+  - Platform:
+      os: linux
+      architecture: aarch64
+    Artifacts:
+      - URI: s3://$BUCKETNAME$/$PATHZIP$
+        Unarchive: ZIP
+    Lifecycle:
+      setEnv:
+        SMEM_IC_MODEL_DIR: '../com.greengrass.SageMakerEdgeManager.AnomalyDetection.Model'
+        IMAGE_PUBLISHER_TOPIC: drone/image
+        DETECTION_RESULT_TOPIC: store/command
+        ALWAYS_SEND_IMAGE: True
+      Install:
+        Timeout: 1000
+        Script: "pip3 install -r {artifacts:decompressedPath}/anomaly-detection-component/inference_anomaly_detection/requirements.txt --user --upgrade \n pip3 install watchdog --user --upgrade \n pip3 install geopandas --user --upgrade "
+        RequiresPrivilege: true
+      Run:
+        Script: "python3 -u {artifacts:decompressedPath}/anomaly-detection-component/inference_anomaly_detection/main.py"
+        RequiresPrivilege: true
+  - Platform:
+      os: linux
+      architecture: /amd64|x86/
+    Artifacts:
+      - URI: s3://$BUCKETNAME$/$PATHZIP$
+        Unarchive: ZIP
+    Lifecycle:
+      setEnv:
+        SMEM_IC_MODEL_DIR: '../com.greengrass.SageMakerEdgeManager.AnomalyDetection.Model'
+        IMAGE_PUBLISHER_TOPIC: drone/image
+        DETECTION_RESULT_TOPIC: store/command
+        ALWAYS_SEND_IMAGE: True
+      Install:
+        Timeout: 1000
+        Script: "python3 -m pip install -r {artifacts:decompressedPath}/anomaly-detection-component/inference_anomaly_detection/requirements.txt --upgrade --no-cache-dir \n python3 -m pip install watchdog --upgrade \n python3 -m pip install geopandas --upgrade "
+        RequiresPrivilege: true
+        #Use --user when you will remove the priviledges
+      Run:
+        Script: "python3 -u {artifacts:decompressedPath}/anomaly-detection-component/inference_anomaly_detection/main.py"
+        RequiresPrivilege: true

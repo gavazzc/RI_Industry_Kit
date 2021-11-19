@@ -1,0 +1,22 @@
+---
+RecipeFormatVersion: '2020-01-25'
+ComponentName: com.greengrass.SageMakerEdgeManager.AnomalyDetection.Model
+ComponentVersion: 1.0.18
+ComponentDescription: This component provides the model for performing image detection.
+ComponentPublisher: Reply
+ComponentConfiguration:
+  DefaultConfiguration:
+    ModelPath: "../com.greengrass.SageMakerEdgeManager.AnomalyDetection.Model"
+Manifests:
+- Platform:
+    os: linux
+    architecture: "/amd64|x86/"
+  #Artifacts:
+  #  - URI: s3://$BUCKETNAME$/$PATHZIP$
+  #    Unarchive: ZIP
+  Lifecycle:
+    Install:
+      Script: "pwd"
+      RequiresPrivilege: true
+      #tar xf /home/best_onnx.tar.gz -C {configuration:/ModelPath}
+      #script: tar xf {artifacts:decompressedPath}/anomaly-detection-model-component/best_onnx.tar.gz -C {configuration:/ModelPath}
