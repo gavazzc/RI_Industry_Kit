@@ -1,15 +1,17 @@
 from starlette.applications import Starlette
 from starlette.responses import JSONResponse
+from starlette.responses import HTMLResponse
 from starlette.routing import Route
 from starlette.config import Config
-
+import base64
 import concurrent.futures
 import sys
-import time
+import time, shutil
 import traceback
 from os import environ, path
 import os
 import json
+import datetime
 
 import awsiot.greengrasscoreipc
 from awsiot.greengrasscoreipc.model import (
@@ -119,6 +121,12 @@ def read_folder(inspection_id):
 async def homepage(request):
     return JSONResponse({'hello': 'world'})
 
+def publish_images(inspection_id):
+    print("Scraping directory...")
+    for filename in os.listdir("/home/jetson/inspection_images/"):
+        publish("drone/image", json.dumps({"image_path":"/home/jetson/inspection_images/"+filename, "inspection_id":inspection_id}))
+    print("Published")
+
 # Inspection start/stop function. It handles http://host/inspection/{start/stop} path.
 # There must be an inspection_id in the query parameters for start.
 async def inspection(request):
@@ -126,21 +134,67 @@ async def inspection(request):
     inspection_id = "no_id"
     if "inspection_id" in request.query_params:
         inspection_id = request.query_params["inspection_id"]
+        if (inspection_id != None):
+            shutil.rmtree("/home/ggc_user/"+inspection_id, ignore_errors=True)
+            os.mkdir("/home/ggc_user/"+inspection_id)
+
     timer_period = -1
     if "timer_period" in request.query_params:
         timer_period = request.query_params["timer_period"]
     topic = f"store/command"
     payload = f'{{"topic":"inspection/command", "inspection_id":"{inspection_id}", "command": "{command}", "timer_period": {timer_period} }}'
     publish(topic, payload)
+    publish_images(inspection_id)
     return JSONResponse({'topic': topic, 'payload': payload})
 
-async def publish_test_data(request):
+'''async def publish_test_data(request):
     publish("store/command", json.dumps({"topic":"store/data","payload":test_payload}))
-    return JSONResponse({'result': 'published'})
+    return JSONResponse({'result': 'published'})'''
 
-async def publish_test_image(request):
-    publish("drone/image", json.dumps({"image_path":"/home/ggc_user/testimages/Rubi116_DJI_0176.jpg"}))
-    return JSONResponse({'result': 'published'})
+async def get_all_frames(request):
+    content1 = '<!DOCTYPE html> <html> <head> <title>View all frames</title> <style> table { font-family: arial, sans-serif; border-collapse: collapse; width: 80%; } td, th { border: 1px solid #dddddd; text-align: left; padding: 8px; } tr:nth-child(even) { background-color: #dddddd; } </style> </head> <body> <div>'
+    content2 = ''
+    content3 = ''
+    content4 = '</div> </body></html>'
+    inc = 0
+
+    if not os.path.exists('/home/ggc_user/aws-demo-1/') or len(os.listdir('/home/ggc_user/aws-demo-1/')) == 0:
+        content2 = '<h1 style="margin-left:30px;margin-bottom_20px;font-family: Arial, Helvetica, sans-serif;">Demo - Waiting for an analyzed frame ...</h1>'
+    else:    
+        content2 = '<h1 style="margin-left:30px;margin-bottom_20px;font-family: Arial, Helvetica, sans-serif;">Demo - View all analyzed frames</h1>'
+        for filename in os.listdir("/home/ggc_user/aws-demo-1/"):
+            if(filename[-3:] == "jpg"):
+                inc+=1
+                image = open("/home/ggc_user/aws-demo-1/"+filename, 'rb')
+                with open("/home/ggc_user/aws-demo-1/"+filename[:-3]+"json", 'r') as openfile:
+                    json_object = json.load(openfile)
+                image_read = image.read()
+                image_64_encode = base64.encodebytes(image_read)
+                content3 += '<div style="float: left;width:40%;padding:10px;"> <h3 style="width:100%;margin-left: 30px;">Frame '+str(inc)+'</h3> <table style="width:100%;margin-left: 30px;"> <tr> <td><b>Anomalies detected</b></td> <td style="color:red"><b>'+str(json_object['anomalies_number'])+'</b></td> </tr> <tr> <td><b>Datetime</b></td> <td>'+str(datetime.datetime.now())+'</td> </tr> <tr> <td><b>Latitude</b></td> <td>'+str(json_object['data']['telemetries']['position']['latitude'])+'</td> </tr> <tr> <td><b>Longitude</b></td> <td>'+str(json_object['data']['telemetries']['position']['longitude'])+'</td> </tr> <tr> <td><b>Altitude</b></td> <td>'+str(json_object['data']['telemetries']['position']['altitude'])+'</td> </tr> </table> <img src="data:image/jpg;base64,'+image_64_encode.decode("utf-8")+'" alt="" style="margin-left:30px;width:100%;margin-top: 10px;"></div>'     
+    tot = content1+content2+content3+content4
+    return HTMLResponse(tot)
+
+async def get_latest_frame(request):
+    content1 = '<!DOCTYPE html> <html> <head> <title>View Latest Frame</title> <style> table { font-family: arial, sans-serif; border-collapse: collapse; width: 80%; } td, th { border: 1px solid #dddddd; text-align: left; padding: 8px; } tr:nth-child(even) { background-color: #dddddd; } </style> </head> <body> <div>'
+    content2 = ''
+    content3 = ''
+    content4 = '</div> </body></html>'
+    inc = 0
+    if not os.path.exists('/home/ggc_user/aws-demo-1/') or len(os.listdir('/home/ggc_user/aws-demo-1/')) == 0:
+        content2 = '<h1 style="margin-left:30px;margin-bottom_20px;font-family: Arial, Helvetica, sans-serif;">Demo - Waiting for an analyzed frame ...</h1>'
+    else:
+        content2 = '<h1 style="margin-left:30px;margin-bottom_20px;font-family: Arial, Helvetica, sans-serif;">Demo - View the latest analyzed frame</h1>'
+        for filename in os.listdir("/home/ggc_user/aws-demo-1/"):
+            if(filename[-3:] == "jpg"):
+                inc+=1
+                image = open("/home/ggc_user/aws-demo-1/"+filename, 'rb')
+                with open("/home/ggc_user/aws-demo-1/"+filename[:-3]+"json", 'r') as openfile:
+                    json_object = json.load(openfile)
+                image_read = image.read()
+                image_64_encode = base64.encodebytes(image_read)
+                content3 = '<div><table style="width:31%;float:left;margin-left: 30px;"> <tr> <td><b>Anomalies detected</b></td> <td style="color:red"><b>'+str(json_object['anomalies_number'])+'</b></td> </tr><tr> <td><b>Datetime</b></td> <td>'+str(datetime.datetime.now())+'</td> </tr> <tr> <td><b>Latitude</b></td> <td>'+str(json_object['data']['telemetries']['position']['latitude'])+'</td> </tr> <tr> <td><b>Longitude</b></td> <td>'+str(json_object['data']['telemetries']['position']['longitude'])+'</td> </tr> <tr> <td><b>Altitude</b></td> <td>'+str(json_object['data']['telemetries']['position']['altitude'])+'</td> </tr> </table> </div> <div style="text-align:center;"> <img src="data:image/jpg;base64,'+image_64_encode.decode("utf-8")+'" alt="" style="margin-left:20px;"></div>'
+    tot =  content1+content2+content3+content4
+    return HTMLResponse(tot)
 
 async def get_data(request):
     # read files, merge, return
@@ -148,7 +202,8 @@ async def get_data(request):
         return JSONResponse({'error': 'inspection_id parameter must be passed.'})
     inspection_id = request.query_params["inspection_id"]
     ret = read_folder(inspection_id)
-    return JSONResponse({'data': ret})
+    data = json.dumps(json.loads(ret), indent=4)
+    return JSONResponse({'data': data})
 
 async def export_to_s3(request):
     if not "inspection_id" in request.query_params:
@@ -164,9 +219,8 @@ routes = [
     Route("/inspection/{command}", endpoint=inspection),
     Route("/data/get", endpoint=get_data),
     Route("/data/export", endpoint=export_to_s3),
-    Route("/publishTest", endpoint=publish_test_data),
-    Route("/publishImageTest", endpoint=publish_test_image)
+    Route("/getAllFrames", endpoint=get_all_frames),
+    Route("/getLatestFrame", endpoint=get_latest_frame)
 ]
 
 app = Starlette(debug=True, routes=routes)
-
