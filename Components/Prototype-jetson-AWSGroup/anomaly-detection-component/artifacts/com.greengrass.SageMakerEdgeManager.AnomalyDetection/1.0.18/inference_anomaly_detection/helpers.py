@@ -14,6 +14,7 @@ from PIL import Image
 from shapely.geometry import Polygon
 
 session = None
+
 def detect_onnx(
     image_path: str,
     model_path: str,
@@ -33,10 +34,9 @@ def detect_onnx(
         anchors: Matrix of the predefined anchors.
         num_classes: Number of classes of the model.
     """
-    global session
+    global session 
     if session is None:
         session = onnxruntime.InferenceSession(model_path)
-    # print("The model expects input shape: ", session.get_inputs()[0].shape)
     batch_size = session.get_inputs()[0].shape[0]
     img_size_h = session.get_inputs()[0].shape[2]
     img_size_w = session.get_inputs()[0].shape[3]
@@ -55,9 +55,11 @@ def detect_onnx(
     outputs = session.run(None, {input_name: img_in})
 
     batch_detections: Any = []
+    
     if official and len(outputs) == 4:
         # model.model[-1].export = False ---> outputs[0] (1, xxxx, 85)
         batch_detections = torch.from_numpy(np.array(outputs[0]))
+
         batch_detections = non_max_suppression(
             batch_detections, conf_thres=0.4, iou_thres=0.5, agnostic=False
         )
@@ -112,14 +114,17 @@ def detect_onnx(
         batch_detections = w_non_max_suppression(
             outputx, num_classes, conf_thres=0.4, nms_thres=0.3
         )
-    labels = batch_detections[0][..., -1]
-    boxs = batch_detections[0][..., :4]
-    confs = batch_detections[0][..., 4].numpy()
-    boxs[:, :] = scale_coords((640, 640), boxs, (height_orig, width_orig)).round()
-    boxs = [list(x) for x in boxs.numpy()]
-    for i, box in enumerate(boxs):
-        box.extend([confs[i], int(labels[i])])
-    result = {"detection": boxs}
+    if batch_detections[0]==None:
+        result = {"detection": []}
+    else:   
+        labels = batch_detections[0][..., -1]
+        boxs = batch_detections[0][..., :4]
+        confs = batch_detections[0][..., 4].numpy()
+        boxs[:, :] = scale_coords((640, 640), boxs, (height_orig, width_orig)).round()
+        boxs = [list(x) for x in boxs.numpy()]
+        for i, box in enumerate(boxs):
+            box.extend([confs[i], int(labels[i])])
+        result = {"detection": boxs}
     if get_metadata:
         result["metadata"] = get_metadata_exif(image_path)
     return result
@@ -161,7 +166,7 @@ def non_max_suppression(
 
     nc = prediction[0].shape[1] - 5  # number of classes
     xc = prediction[..., 4] > conf_thres  # candidates
-
+    
     # Settings
     max_wh = 4096  # (pixels) minimum and maximum box width and height
     max_det = 300  # maximum number of detections per image
@@ -175,7 +180,7 @@ def non_max_suppression(
         # Apply constraints
         # x[((x[..., 2:4] < min_wh) | (x[..., 2:4] > max_wh)).any(1), 4] = 0
         x = x[xc[xi]]  # confidence
-
+        
         # If none remain process next image
         if not x.shape[0]:
             continue
