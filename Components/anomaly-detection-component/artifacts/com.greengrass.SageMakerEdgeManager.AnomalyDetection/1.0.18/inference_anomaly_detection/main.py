@@ -56,7 +56,11 @@ class StreamHandler(client.SubscribeToTopicStreamHandler):
             #message = event.json_message.message
             print("Received new message")
             print(message)
-            tmp = detect_onnx(image_path=message['image_path'],model_path=MODEL_PATH,anchors=ANCHORS,num_classes=len(CLASS_NAMES), get_metadata=False)
+            ##Mocked invocation, please insert the actual model
+            ##tmp = detect_onnx(image_path=message['image_path'],model_path=MODEL_PATH,anchors=ANCHORS,num_classes=len(CLASS_NAMES), get_metadata=False)
+            tmp = {
+                "detection": [[1,1,1,1,1,1]]
+            }
 
             '''lat = degress(tmp["metadata"]["GPS GPSLatitude"])
             lon = degress(tmp["metadata"]["GPS GPSLongitude"])

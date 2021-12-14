@@ -15,7 +15,7 @@ from file_ops import FileManager
 TIMEOUT = 10
 
 ipc_client = awsiot.greengrasscoreipc.connect()
-                    
+
 class StreamHandler(client.SubscribeToTopicStreamHandler):
     file_manager = None
     def __init__(self, file_manager):
