@@ -30,7 +30,7 @@ Manifests:
         ALWAYS_SEND_IMAGE: True
       Install:
         Timeout: 1000
-        Script: "pip3 install -r {artifacts:decompressedPath}/anomaly-detection-component/inference_anomaly_detection/requirements.txt --user --upgrade \n pip3 install watchdog --user --upgrade \n pip3 install geopandas --user --upgrade "
+        Script: "yum install opencv opencv-devel opencv-python -y \n pip3 install -r {artifacts:decompressedPath}/anomaly-detection-component/inference_anomaly_detection/requirements.txt --user --upgrade \n pip3 install watchdog --user --upgrade \n pip3 install geopandas --user --upgrade "
         RequiresPrivilege: true
       Run:
         Script: "python3 -u {artifacts:decompressedPath}/anomaly-detection-component/inference_anomaly_detection/main.py"
@@ -49,7 +49,7 @@ Manifests:
         ALWAYS_SEND_IMAGE: True
       Install:
         Timeout: 1000
-        Script: "python3 -m pip install -r {artifacts:decompressedPath}/anomaly-detection-component/inference_anomaly_detection/requirements.txt --upgrade --no-cache-dir \n python3 -m pip install watchdog --upgrade \n python3 -m pip install geopandas --upgrade "
+        Script: "yum install opencv opencv-devel opencv-python -y \n python3 -m pip install -r {artifacts:decompressedPath}/anomaly-detection-component/inference_anomaly_detection/requirements.txt --upgrade --no-cache-dir \n python3 -m pip install watchdog --upgrade \n python3 -m pip install geopandas --upgrade "
         RequiresPrivilege: true
         #Use --user when you will remove the priviledges
       Run:

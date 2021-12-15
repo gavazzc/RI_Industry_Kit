@@ -2,7 +2,9 @@ import os
 from helpers import detect_onnx, degress
 
 import json
+import random
 
+import cv2
 import concurrent.futures
 import sys
 import time
@@ -19,6 +21,79 @@ from awsiot.greengrasscoreipc.model import (
     BinaryMessage
 )
 
+def get_tel():
+    test_payload = {
+        "data" : {
+            "battery" : {
+                "battery1" : {
+                    "batteryCapacityPercent" : 14,
+                    "batteryTemperature" : 32,
+                    "currentVoltage" : 22
+                },
+                "battery2" : {
+                    "batteryCapacityPercent" : 0,
+                    "batteryTemperature" : 0,
+                    "currentVoltage" : 0
+                }
+            },
+            "telemetries" : {
+                "attitude" : {
+                    "q0" : 0.90594452619552612,
+                    "q1" : 0.0030836670193821192,
+                    "q2" : 0.0035839446354657412,
+                    "q3" : -0.42337003350257874
+                },
+                "flightstatus" : 0,
+                "position" : {
+                    "altitude" : round(random.uniform(10,60), 6),
+                    "latitude" : round(random.uniform(10,60), 6),
+                    "longitude" : round(random.uniform(10,60), 6)
+                },
+                "rc" : {
+                    "pitch" : 0,
+                    "roll" : 0,
+                    "throttle" : 0,
+                    "yaw" : 0
+                },
+                "velocity" : {
+                    "vx" : round(random.uniform(10,60), 6),
+                    "vy" : round(random.uniform(10,60), 6),
+                    "vz" : round(random.uniform(10,60), 6)
+                }
+            }
+        }
+    }
+    return test_payload
+
+def create_bounding_box(img_path, d, tel, inspection_id, anomalies_number):
+    
+    print("Creating bouding box with parameters: ",img_path, d, tel, inspection_id, anomalies_number)
+    
+    img_name = img_path[img_path.rindex('/')+1:]
+
+    im = cv2.imread(img_path)
+    gray = cv2.cvtColor(im,cv2.COLOR_BGR2GRAY)
+    contours, hierarchy = cv2.findContours(gray,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)[-2:]
+    idx = 0
+    for cnt in contours:
+        idx += 1
+        x,y,w,h = cv2.boundingRect(cnt)
+        roi=im[y:y+h,x:x+w]
+        for i in d:
+            image = cv2.rectangle(im,(int(i["left"]),int(i["top"])),(int(i["right"]),int(i["bottom"])),(255, 255, 51), 1)
+            cv2.putText(image, str(i['anomaly'])+":"+str(round(i['anomaly_score'], 1)), (int(i["left"]),int(i["top"])-10), cv2.FONT_HERSHEY_SIMPLEX, 0.6, (255, 255, 51), 2)
+
+    d = get_tel()
+    internal = {'anomalies_number': anomalies_number}
+    d.update(internal)
+    tel = json.dumps(d, indent = 4)
+    with open("/home/ggc_user/"+str(inspection_id)+"/"+img_name[:-3]+"json", "w") as outfile:
+        outfile.write(tel)
+
+    cv2.imwrite("/home/ggc_user/"+str(inspection_id)+"/"+img_name, roi)
+    cv2.waitKey(0)
+    
+    print("Printed image file ", "/home/ggc_user/"+str(inspection_id)+"/"+img_name)
 
 #MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "model", "best.onnx")
 #print(os.environ.get("SMEM_IC_MODEL_DIR"))
@@ -54,8 +129,8 @@ class StreamHandler(client.SubscribeToTopicStreamHandler):
             message_string = str(event.binary_message.message, "utf-8")
             message = json.loads(message_string)
             #message = event.json_message.message
-            print("Received new message")
-            print(message)
+            print("Received new message", message)
+            tel = json.dumps(get_tel(), indent = 4)
             ##Mocked invocation, please insert the actual model
             ##tmp = detect_onnx(image_path=message['image_path'],model_path=MODEL_PATH,anchors=ANCHORS,num_classes=len(CLASS_NAMES), get_metadata=False)
             tmp = {
@@ -76,6 +151,7 @@ class StreamHandler(client.SubscribeToTopicStreamHandler):
                 "Longitude": lon,
             }
             tot_det = []
+            print("fetching detection results")
             if len(tmp["detection"]) > 0:
                 for values in tmp["detection"]:
                     tmp_det = {}
@@ -87,10 +163,15 @@ class StreamHandler(client.SubscribeToTopicStreamHandler):
                     tmp_det["anomaly"] = CLASS_NAMES[int(values[5])]
                     tot_det.append(tmp_det)
             res_pred["detection"] = tot_det
+            
+            print("calling bounding box creator")
+            create_bounding_box(message['image_path'], res_pred["detection"], tel, message['inspection_id'], len(tmp["detection"]))
+            
             if always_send_image=='True' or len(res_pred["detection"])>0:
                 self.publish_detection_result(res_pred)
-
-
+            
+            print("sending back the control to caller")
+            
         except:
             traceback.print_exc()
 

@@ -13,6 +13,7 @@ import base64
 import os
 import json
 import datetime
+import time, shutil
 
 import awsiot.greengrasscoreipc
 from awsiot.greengrasscoreipc.model import (
@@ -132,6 +133,9 @@ async def inspection(request):
     inspection_id = "no_id"
     if "inspection_id" in request.query_params:
         inspection_id = request.query_params["inspection_id"]
+        if (inspection_id != None):
+            shutil.rmtree("/home/ggc_user/"+inspection_id, ignore_errors=True)
+            os.mkdir("/home/ggc_user/"+inspection_id)
     timer_period = -1
     if "timer_period" in request.query_params:
         timer_period = request.query_params["timer_period"]
@@ -230,7 +234,9 @@ routes = [
     Route("/data/get", endpoint=get_data),
     Route("/data/export", endpoint=export_to_s3),
     Route("/publishTest", endpoint=publish_test_data),
-    Route("/publishImageTest", endpoint=publish_test_image)
+    Route("/publishImageTest", endpoint=publish_test_image),
+    Route("/getAllFrames", endpoint=get_all_frames),
+    Route("/getLatestFrame", endpoint=get_latest_frame)
 ]
 
 app = Starlette(debug=True, routes=routes)

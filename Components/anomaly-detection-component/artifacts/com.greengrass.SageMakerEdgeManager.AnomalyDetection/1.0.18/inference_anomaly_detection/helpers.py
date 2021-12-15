@@ -112,14 +112,17 @@ def detect_onnx(
         batch_detections = w_non_max_suppression(
             outputx, num_classes, conf_thres=0.4, nms_thres=0.3
         )
-    labels = batch_detections[0][..., -1]
-    boxs = batch_detections[0][..., :4]
-    confs = batch_detections[0][..., 4].numpy()
-    boxs[:, :] = scale_coords((640, 640), boxs, (height_orig, width_orig)).round()
-    boxs = [list(x) for x in boxs.numpy()]
-    for i, box in enumerate(boxs):
-        box.extend([confs[i], int(labels[i])])
-    result = {"detection": boxs}
+    if batch_detections[0]==None:
+        result = {"detection": []}
+    else:   
+        labels = batch_detections[0][..., -1]
+        boxs = batch_detections[0][..., :4]
+        confs = batch_detections[0][..., 4].numpy()
+        boxs[:, :] = scale_coords((640, 640), boxs, (height_orig, width_orig)).round()
+        boxs = [list(x) for x in boxs.numpy()]
+        for i, box in enumerate(boxs):
+            box.extend([confs[i], int(labels[i])])
+        result = {"detection": boxs}
     if get_metadata:
         result["metadata"] = get_metadata_exif(image_path)
     return result

@@ -11,3 +11,4 @@ utm
 Pillow
 Shapely
 loguru
+opencv-python
