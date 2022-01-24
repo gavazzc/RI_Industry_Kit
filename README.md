@@ -10,6 +10,8 @@ These are regions on the solar panel that are overloaded, due to which they beco
 
 Here below an example of hotspots in ous sample dataset
 
+(hotspot.png)
+
 
 ## Architecture
 
