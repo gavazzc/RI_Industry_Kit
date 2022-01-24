@@ -1,7 +1,7 @@
 # Industry kit for Remote Inspection
 
 The objective for this repo is to provide a set of assets to address remote inspection (using drones and Computervision based AI/ML) of solar power generation plants. The pillar of this solution is the adoption of Greengrass v2 as runtime for edge device which could be a Jetson Nano, or an AWS EC2 instance for quick demo purposes. In real life scenarios GG will run on Jetson nano or GG compatible microcontroller HW attached to drone on-board computer. AI/ML model runs in realtime on the edge device using SageMaker Edge Manager to manage lifecycle of the model. The model was training with a small dataset of thermal images captured during a drone flight over a solar power plants. It's important to stress the objective is not to provide an enterprise grade ML model (this is due mainly to availabilityof small dataset) but to show and end-to-end management platform. GreenGrass v2.5 is supported on many Linux flavours, Windows and on different hw architectures (x86, AMD, ARM) and so can be used to have an homogeneous solution for a variety of robots and drone of many vendors.
-This use case is related to Solar plants but using different model (trained with different dataset) could be adapter to other use cases like rust detection on wind blades.
+This use case is related to Solar plants but using different model (trained with different dataset) could be adapted to other use cases like rust detection on wind blades.
 
 ## Architecture
 
