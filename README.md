@@ -8,7 +8,7 @@ This use case is related to Solar plants but using different model (trained with
 Hotspots: (ref: http://en.radmanenergy.ir/343/hot-spots/ )
 These are regions on the solar panel that are overloaded, due to which they become warm. These can be generated because of poorly soldered cell connections or even structural flaws in solar cells. Inadequate soldered connections decrease the resistance in segments that receive the power rendered by cells. This resistance leads to an increased voltage, forming a hotspot in the soldered cell. Hotspots can result in short-circuits and can also depreciate the productivity and goodwill of the PV system
 
-Here below an example of hotspots in ous sample dataset
+Here below an example of hotspots in our sample dataset (red bounding boxes)
 
 ![Hotspot](./hotspot.png)
 
