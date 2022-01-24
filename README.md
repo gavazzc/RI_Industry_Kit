@@ -15,9 +15,9 @@ Here below an example of hotspots in our sample dataset (red bounding boxes)
 
 ## Architecture
 
-![Prototype architecture](Architecture/DronesAndRobotsManagement-Architecture.png)
+![Prototype architecture](Architecture/IKArchitecture.png)
 
-## Components
+## Green Grass v2 Custom Components
 
 ### REST API
 
