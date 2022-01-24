@@ -1,4 +1,4 @@
-# Enel Drones Prototype
+# Industry kit for Remote Inspection
 
 ## Architecture
 
