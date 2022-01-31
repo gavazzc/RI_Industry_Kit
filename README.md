@@ -74,9 +74,9 @@ Exporter component receives export data command from the REST API /data/export?i
 
 Machine Learning Inference component receives images from Capture component and runs a custom ML model for these images. The ML inference result is sent to Store component for storing the data in the current inspection.
 
-### Custom ML
+### IKIT_YOLO4
 
-This component is used in the case where Greengrass runs in a computer. It watches "/home/ggc_user/djiimages" folder for changes. When there is a new file in this folder, Machine Learning Inference runs for this image.
+This is an object detection model based in Yolo4 and trained with the thermal images dataset.
 
 ### FlightRecord
 
