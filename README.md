@@ -40,7 +40,7 @@ REST API component is responsible of providing a REST interface for accessing th
 
 #### Security of the endpoint
 
-This local API is accessible by any device in the same network. Therefore, in the production it needs to be secured. The endpoint is run by using gunicorn. The best way would be to use two-way TLS where both server and client verifies each other's certificates. The REST API is run in Greengrass. The local Greengrass IoT Thing certificate can be used for server side certificate purposes. The client will be the mobile application. Therefore, in the current implementation of the mobile app that has been developed by Reply, an IoT certificate is used. This certificate can be used for client side certificate.
+This local API is accessible by any device in the same network. Therefore, in the production it needs to be secured. The endpoint is run by using gunicorn. The best way would be to use two-way TLS where both server and client verifies each other's certificates. The REST API is run in Greengrass. The local Greengrass IoT Thing certificate can be used for server side certificate purposes. I this specific implementation a self-signed certificate is provided.
 
 ##### Two-way-TLS authentication sample
 
@@ -98,14 +98,15 @@ SageMaker Neo is a platform which allows Machine Learning developers to compile 
 
 SageMaker Edge Manager is a tool that facilitates the model management at the edge by using SageMaker Neo optimized models. SageMaker Edge Manager Agent runs on the edge device to perform operations to secure, optimize and maintain the machine learning inference. Therefore, it simplifies the management of the fleets that uses different device architecture. Please see : https://docs.aws.amazon.com/sagemaker/latest/dg/edge.html
 
-### Greengrass
-
-Greengrass provides a SageMaker Edge Manager component. During the prototyping, a sample Greengrass inference has been created. It can be found under SageMakerEdgeManager folder. Please see the [README.md](SageMakerEdgeManager/Greengrass/README.md) file under this folder for the instructions.
-
-Docs : https://docs.aws.amazon.com/sagemaker/latest/dg/edge-greengrass.html
 
 ### Linux and Windows as stand-alone agent
 
 It is also possible to use stand-alone SageMaker Agent without Greengrass for Windows and Linux devices.
 
 Docs : https://docs.aws.amazon.com/sagemaker/latest/dg/edge-device-fleet-manual.html
+
+## Demo Flow (step by step)
+
+![Industry Kit Demo Flow](Architecture/IKdemoflow.png)
+
+
