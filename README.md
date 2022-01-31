@@ -23,7 +23,7 @@ Here below an example of hotspots in our sample dataset (red bounding boxes)
 With AWS IoT Greengrass, Version 2, you can arbitrarily develop and deploy modular software in units called components. Each custom component require at least a recipe (a YAML or JSON document) to describe start/stop procedure and potential dependecies on other components and a folder with artifact, where code is stored. In the folder named "components" you will find all the custom components required including the machine learning model (trained with the sample dataset) and the inference code. These component must be created and deployed in AWS IoT using the create_components python script.
 Here below a quick overview of steps required to provision the industry kit
 
-![Prototype architecture](Architecture/IKDeploy.png)
+![Industry Kit Deployment](Architecture/IKdeploy.png)
 
 ## Green Grass v2 Custom Components
 
