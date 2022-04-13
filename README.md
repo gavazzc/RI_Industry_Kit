@@ -26,28 +26,30 @@ With AWS IoT Greengrass, Version 2, you can arbitrarily develop and deploy modul
 
 ### Requirements:
 
-You need to install few AWS components in your local workstation/PC:
+You need to install few AWS components in your local workstation/PC: 
+
 AWS CLI 2.2.30
-(ref: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 AWS Session Manager plugin for AWS CLI
-(ref: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
 AWS CDK 2.15.0
-(ref: https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html)
+
+ref: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+ref: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
+ref: https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html
 
 Configure your local AWS credentials and default region with AWS CONFIGURE command
 
 Other opensource tools which needs to be installed:
 nodejs v17.7.1
-typerscript 4.6.3
+typescript 4.6.3
 git 2.33
 
 ### clone github repo and launch CDK Deploy
 
-Clone gitlab repo in your local directory (here I used "ikit" as reference but you can change name)
+Clone gitlab repo in your local directory (here I used "ikit" as a reference)
 git clone https://gitlab.aws.dev/-/ide/project/industry-kits/powerandutilities ./ikit
 
 cd ikit/source/CDK
-npm install (to be sure to have same CDK libraries)
+npm install (this is to be sure to have same CDK libraries as listed in package.json)
 cdk deploy
 
 CDK will prompt "(NOTE: There may be security-related changes not in this list. See https://github.com/aws/aws-cdk/issues/1299)
@@ -56,32 +58,32 @@ type "y" and enter.
 Deployment should take about 5 minutes.
 
 CDK will deploy all stack including GGv2 and related core devices, components and deployments.
-Take note of EC2 instance-id from CDK/Cloudformation output
+Take note of EC2 instance-id from CDK/CloudFormation output
 
 ### establish a port forwarding to acceess mokup of mobile app
 
-Since a Gunicorn webserver is running on EC2/GGv2 we need to establish a port-forward from instance 80 port to local 9000.
-For this purpose we use ssm plugin. Replace "i-05f4123e926d3acae" with your instance id
+Gunicorn webserver is running on EC2/GGv2 and we need to establish a port-forward from instance 80 port to local 9000 of our workstation.
+Use ssm plugin. Replace "i-05f4123e926d3acae" with your instance id
 
 aws ssm start-session --target i-05f4123e926d3acae --document-name AWS-StartPortForwardingSession --parameters '{"portNumber":["80"],"localPortNumber":["9999"]}'
 
-Test your browser with localhost:9999. If you see {"hello":"world"} you succerssfully got an answer from gunicorn on EC2
-If this fails please check browser security settings to assure http is allowed.
+Test your browser with localhost:9000 If you see {"hello":"world"} you successfully got an answer from gunicorn on EC2.
+If this fails please check browser security settings to assure http traffic is allowed.
 
-Open you browser with the simulated mobile application link: /Users/gavazzc/ikit/source/static/index.html
+Open you browser with the simulated mobile application link: ikit/source/static/index.html
 You are ready to go.
 
 ## Demo instructions
 Insert name of this inspection in first box.
 When you press the green bottom a local folder on GGv2 will be created to store all images.
 Gray button shows current frame with bounding box on detected anomalies.
-Blue button shows all frames from start of assessment, in a single page.
+Blue button shows all frames from start of inspection in a single page.
 Export will upload images and telemetry data to S3 bucket.
 Once done, stop with red button.
 
 ## Clean up instructions
 
-Go in you local repo and launch CDK detroy.
+Go in you local repo and launch CDK destroy.
 cd ikit/source/CDK
 cdk destroy
 
