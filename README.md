@@ -60,10 +60,10 @@ Deployment should take about 5 minutes.
 CDK will deploy all stack including GGv2 and related core devices, components and deployments.
 Take note of EC2 instance-id from CDK/CloudFormation output
 
-### establish a port forwarding to acceess mokup of mobile app
+### establish a port forwarding to access mock-up of mobile app
 
 Gunicorn webserver is running on EC2/GGv2 and we need to establish a port-forward from instance 80 port to local 9000 of our workstation.
-Use ssm plugin. Replace "i-05f4123e926d3acae" with your instance id
+Use AWS SSM plugin. Replace "i-05f4123e926d3acae" with your instance id
 
 aws ssm start-session --target i-05f4123e926d3acae --document-name AWS-StartPortForwardingSession --parameters '{"portNumber":["80"],"localPortNumber":["9000"]}'
 
