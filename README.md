@@ -28,33 +28,33 @@ With AWS IoT Greengrass, Version 2, you can arbitrarily develop and deploy modul
 
 You need to install few AWS components in your local workstation/PC: 
 
-AWS CLI 2.2.30
-AWS Session Manager plugin for AWS CLI
-AWS CDK 2.15.0
+AWS CLI 2.2.30 / AWS Session Manager plugin for AWS CLI /AWS CDK 2.15.0
 
-ref: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html /n
-ref: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html /n
-ref: https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html /n
+ref: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html  https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html  https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html /n
 
 Configure your local AWS credentials and default region with AWS CONFIGURE command
 
 Other opensource tools which needs to be installed:
-nodejs v17.7.1
-typescript 4.6.3
-git 2.33
+
+nodejs v17.7.1 / typescript 4.6.3 / git 2.33
 
 ### clone github repo and launch CDK Deploy
 
 Clone gitlab repo in your local directory (here I used "ikit" as a reference)
+
 git clone https://gitlab.aws.dev/-/ide/project/industry-kits/powerandutilities ./ikit
 
 cd ikit/source/CDK
+
+
 npm install (this is to be sure to have same CDK libraries as listed in package.json)
+
 cdk deploy
 
-CDK will prompt "(NOTE: There may be security-related changes not in this list. See https://github.com/aws/aws-cdk/issues/1299)
-Do you wish to deploy these changes (y/n)? y
+CDK will prompt "Do you wish to deploy these changes (y/n)? y
+
 type "y" and enter.
+
 Deployment should take about 5 minutes.
 
 CDK will deploy all stack including GGv2 and related core devices, components and deployments.
@@ -65,7 +65,7 @@ Take note of EC2 instance-id from CDK/CloudFormation output
 Gunicorn webserver is running on EC2/GGv2 and we need to establish a port-forward from instance 80 port to local 9000 of our workstation.
 Use ssm plugin. Replace "i-05f4123e926d3acae" with your instance id
 
-aws ssm start-session --target i-05f4123e926d3acae --document-name AWS-StartPortForwardingSession --parameters '{"portNumber":["80"],"localPortNumber":["9999"]}'
+aws ssm start-session --target i-05f4123e926d3acae --document-name AWS-StartPortForwardingSession --parameters '{"portNumber":["80"],"localPortNumber":["9000"]}'
 
 Test your browser with localhost:9000 If you see {"hello":"world"} you successfully got an answer from gunicorn on EC2.
 If this fails please check browser security settings to assure http traffic is allowed.
@@ -83,8 +83,10 @@ Once done, stop with red button.
 
 ## Clean up instructions
 
-Go in you local repo and launch CDK destroy.
+Go in you local repo and launch CDK destroy
+
 cd ikit/source/CDK
+
 cdk destroy
 
 This would cleanup everything except for Greengrass stuff like core devices, components, deployments.
