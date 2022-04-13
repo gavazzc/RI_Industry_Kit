@@ -1,6 +1,6 @@
 # Industry kit for Remote Inspection with computer vision at edge (of solar farms)
 
-The objective for this repo is to provide a set of assets to address remote inspection (using drones and Computervision based AI/ML) of solar power generation plants. The pillar of this solution is the adoption of Greengrass v2 as runtime for edge device which could be a Jetson Nano, or an AWS EC2 instance for quick demo purposes. In real life scenarios GG will run on a Jetson nano or GG compatible microcontroller HW attached to drone on-board computer. AI/ML model runs in realtime on the edge device using SageMaker Edge Manager to manage lifecycle of the model. The model was trained with a small dataset of thermal images captured during a drone flight. It's important to stress that the objective is not to provide an enterprise grade ML model (due to to a limite dataset of 42 images) but to show and end-to-end management platform. GreenGrass v2.5 is supported on many Linux flavours, Windows and on different hw architectures (x86, AMD, ARM) and so can be used to have an homogeneous solution for a variety of robots and drone of many vendors.
+The objective for this repo is to provide a set of assets to address remote inspection (using drones and Computervision based AI/ML) of solar power generation plants. The pillar of this solution is the adoption of Greengrass v2 as runtime for edge device which could be a Jetson Nano, or an AWS EC2 instance for quick demo purposes. In real life scenarios GG will run on a Jetson nano or GG compatible microcontroller HW attached to drone on-board computer. AI/ML model runs in realtime on the edge device using SageMaker Edge Manager to manage lifecycle of the model. The model was trained with a small dataset of thermal images captured during a drone flight. It's important to stress that the objective is not to provide an enterprise grade ML model (due to to a limited dataset of 42 images) but to show and end-to-end management platform. GreenGrass v2.5 is supported on many Linux flavours, Windows and on different hw architectures (x86, AMD, ARM) and so can be used to have an homogeneous solution for a variety of robots and drone of many vendors.
 
 This use case is related to Solar plants but using different model (trained with different dataset) could be adapted to other use cases like rust detection on wind blades.
 
@@ -20,10 +20,97 @@ Here below an example of hotspots in our sample dataset (red bounding boxes)
 
 ## Components provided
 
-With AWS IoT Greengrass, Version 2, you can arbitrarily develop and deploy modular software in units called components. Each custom component require at least a recipe (a YAML or JSON document) to describe start/stop procedure and potential dependecies on other components and a folder with artifact, where code is stored. In the folder named "components" you will find all the custom components required including the machine learning model (trained with the sample dataset) and the inference code. These component must be created and deployed in AWS IoT using the create_components python script.
-Here below a quick overview of steps required to provision the industry kit
+With AWS IoT Greengrass, Version 2, you can arbitrarily develop and deploy modular software in units called components. Each custom component require at least a recipe (a YAML or JSON document) to describe start/stop procedure and potential dependecies on other components and a folder with artifact, where code is stored. In the folder named "components" you will find all the custom components required including the machine learning model (trained with the sample dataset) and the inference code. These component could be created and deployed in AWS IoT using the create_components python script.
 
-![Industry Kit Deployment](Architecture/IKdeploy.png)
+## Installation steps
+
+### Requirements:
+
+You need to install few AWS components in your local workstation/PC:
+AWS CLI 2.2.30
+(ref: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+AWS Session Manager plugin for AWS CLI
+(ref: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
+AWS CDK 2.15.0
+(ref: https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html)
+
+Configure your local AWS credentials and default region with AWS CONFIGURE command
+
+Other opensource tools which needs to be installed:
+nodejs v17.7.1
+typerscript 4.6.3
+git 2.33
+
+### clone github repo and launch CDK Deploy
+
+Clone gitlab repo in your local directory (here I used "ikit" as reference but you can change name)
+git clone https://gitlab.aws.dev/-/ide/project/industry-kits/powerandutilities ./ikit
+
+cd ikit/source/CDK
+npm install (to be sure to have same CDK libraries)
+cdk deploy
+
+CDK will prompt "(NOTE: There may be security-related changes not in this list. See https://github.com/aws/aws-cdk/issues/1299)
+Do you wish to deploy these changes (y/n)? y
+type "y" and enter.
+Deployment should take about 5 minutes.
+
+CDK will deploy all stack including GGv2 and related core devices, components and deployments.
+Take note of EC2 instance-id from CDK/Cloudformation output
+
+### establish a port forwarding to acceess mokup of mobile app
+
+Since a Gunicorn webserver is running on EC2/GGv2 we need to establish a port-forward from instance 80 port to local 9000.
+For this purpose we use ssm plugin. Replace "i-05f4123e926d3acae" with your instance id
+
+aws ssm start-session --target i-05f4123e926d3acae --document-name AWS-StartPortForwardingSession --parameters '{"portNumber":["80"],"localPortNumber":["9999"]}'
+
+Test your browser with localhost:9999. If you see {"hello":"world"} you succerssfully got an answer from gunicorn on EC2
+If this fails please check browser security settings to assure http is allowed.
+
+Open you browser with the simulated mobile application link: /Users/gavazzc/ikit/source/static/index.html
+You are ready to go.
+
+## Demo instructions
+Insert name of this inspection in first box.
+When you press the green bottom a local folder on GGv2 will be created to store all images.
+Gray button shows current frame with bounding box on detected anomalies.
+Blue button shows all frames from start of assessment, in a single page.
+Export will upload images and telemetry data to S3 bucket.
+Once done, stop with red button.
+
+## Clean up instructions
+
+Go in you local repo and launch CDK detroy.
+cd ikit/source/CDK
+cdk destroy
+
+This would cleanup everything except for Greengrass stuff like core devices, components, deployments.
+You could delete this using AWS console or AWS CLI.
+Here below some examples with CLI.
+
+aws iot delete-thing-group --thing-group-name ri-drone-mock-group
+
+aws iot list-thing-principals --thing-name ri-drone-mock  
+
+TAKE NOTE OF CERTIFICATES
+
+aws iot detach-thing-principal --thing-name ri-drone-mock --principal arn:aws:iot:eu-central-1XXXXXXX
+
+aws iot delete-thing --thing-name ri-drone-mock  
+
+aws greengrassv2 delete-core-device --core-device-thing-name ri-drone-mock
+
+aws greengrassv2 list-components
+
+aws greengrassv2 delete-component --arn XXXXXX
+
+Aws Greengrassv2 list-deployments
+
+LOOK FOR targetArn arn:aws:iot:eu-central-1:YOUR_ACCOUNT_NUMBER:thinggroup/ri-drone-mock-group and TAKE NODE of deployment id
+
+aws greengrassv2 cancel-deployment --deployment-id YOUR_DEPLLOYMENT_ID
+
 
 ## Green Grass v2 Custom Components
 
@@ -38,21 +125,6 @@ REST API component is responsible of providing a REST interface for accessing th
 - /publishTest : publishes a test data. The published data is stored into inspection_id folder if an inspection has been started before.
 - /publishImageTest : publishes an image test data. Path to a sample image is sent to Machine Learning Inference component and the result of it stored in the inspection_id folder if an inspection has been started before.
 
-#### Security of the endpoint
-
-This local API is accessible by any device in the same network. Therefore, in the production it needs to be secured. The endpoint is run by using gunicorn. The best way would be to use two-way TLS where both server and client verifies each other's certificates. The REST API is run in Greengrass. The local Greengrass IoT Thing certificate can be used for server side certificate purposes. I this specific implementation a self-signed certificate is provided.
-
-##### Two-way-TLS authentication sample
-
-The following command can be used to initate a gunicorn server which uses two way TLS authentication :
-
-`gunicorn -w 4 -k uvicorn.workers.UvicornWorker --log-level warning --cert-reqs 1 --keyfile domain.key --certfile domain.crt --ca-certs twoway.crt example:app`
-
-And the client can authenticate to the server by using client side certificates :
-
-`curl -vk --key twoway.key --cert twoway.crt https://127.0.0.1:8000`
-
-The security can be improved further by checking the Certificate Authority that has signed the certificates.
 
 ### DJI Onboard SDK
 
