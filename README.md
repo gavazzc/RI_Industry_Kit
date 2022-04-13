@@ -32,9 +32,9 @@ AWS CLI 2.2.30
 AWS Session Manager plugin for AWS CLI
 AWS CDK 2.15.0
 
-ref: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
-ref: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html
-ref: https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html
+ref: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html /n
+ref: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html /n
+ref: https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html /n
 
 Configure your local AWS credentials and default region with AWS CONFIGURE command
 
