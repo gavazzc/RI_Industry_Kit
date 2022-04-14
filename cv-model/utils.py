@@ -17,6 +17,7 @@ stride = [32, 16, 8]
 batch_size = 1
 num_classes = 80
 
+
 def preprocess_img(img, img_size=416):
     '''
     Preprocess an OpenCV raw image and prepare
@@ -173,7 +174,7 @@ def detect(pred,conf_tresh=0.4, iou_tresh=0.5, merge=False):
     Get the two outputs of the network
     apply sigmoid, grids and concatenate
     exptected input shapes = [(batch_size,3,13,1,num_classes+5), (batch_size,3,26,26,num_classes+5)]
-    '''
+    '''    
     pred = np.concatenate([get_pred(sigmoid(p), stride[i],anchors[i]) for i,p in enumerate(pred)], axis=1)
     preds = non_max_suppression(pred, conf_tresh, iou_tresh, merge)
     detections = []
