@@ -1,6 +1,6 @@
 # Industry kit for Remote Inspection with computer vision at edge (of solar farms)
 
-The objective for this repo is to provide a set of assets to address remote inspection (using drones and Computervision based AI/ML) of solar power generation plants. The pillar of this solution is the adoption of Greengrass v2 as runtime for edge device which could be a Jetson Nano, or an AWS EC2 instance for quick demo purposes. In real life scenarios GG will run on a Jetson nano or GG compatible microcontroller HW attached to drone on-board computer. AI/ML model runs in realtime on the edge device using SageMaker Edge Manager to manage lifecycle of the model. The model was trained with a small dataset of thermal images captured during a drone flight. It's important to stress that the objective is not to provide an enterprise grade ML model (due to to a limite dataset of 42 images) but to show and end-to-end management platform. GreenGrass v2.5 is supported on many Linux flavours, Windows and on different hw architectures (x86, AMD, ARM) and so can be used to have an homogeneous solution for a variety of robots and drone of many vendors.
+The objective for this industry kit is to provide a set of assets to address remote inspection (using drones and Computervision based AI/ML) of solar power generation plants. The pillar of this solution is the adoption of Greengrass v2 as runtime for edge device which could be a Jetson Nano, or an AWS EC2 instance for quick demo purposes. In real life scenarios GG will run on a Jetson nano or GG compatible microcontroller HW attached to drone on-board computer. AI/ML model runs in realtime on the edge device using SageMaker Edge Manager to manage lifecycle of the model. The model was trained with a small dataset of thermal images captured during a drone flight. It's important to stress that the objective is not to provide an enterprise grade ML model (due to to a limite dataset of 42 images) but to show and end-to-end management platform. GreenGrass v2.5 is supported on many Linux flavours, Windows and on different hw architectures (x86, AMD, ARM) and so can be used to have an homogeneous solution for a variety of robots and drone of many vendors.
 
 This use case is related to Solar plants but using different model (trained with different dataset) could be adapted to other use cases like rust detection on wind blades.
 
@@ -12,6 +12,9 @@ These are regions on the solar panel that are overloaded, due to which they beco
 Here below an example of hotspots in our sample dataset (red bounding boxes)
 
 ![Hotspot](./hotspot.png)
+
+In cv-model/coco128/augmented_train folder your will find a small dataset with 43 aerial thermal images augmented with flip and contrast in oder to have 3X images. 
+In cv-model/coco128/augmented_train_label you will find labels in JSON/yolo annotation format: Class, XY for bounding box center, width and height of each BB. Remember YOLO annotation each value (except for class) is expressed in a decimal number expressing percentage (0 to 1) of total image size (416x416 pixels for this dataset).
 
 
 ## Architecture
@@ -82,15 +85,26 @@ This is an object detection model based in Yolo4 and trained with the thermal im
 
 DJI has a propriety format which is called as FlightRecord file. This component is used in the case where Greengrass runs in a computer. It watches "/home/ggc_user/flightdata" folder for changes. When there is a new flight record file in this folder, it is parsed to retrieve telemetry and image data. This component is running a nodejs script that is developed for this purpose. The recipe installs a public repository to the device for parsing the DJI's flight record files.
 
-## How to run the components
+# Deployment
 
-In order to test the components, greengrass-cli needs to be installed with AWS Greengrass. Please see : https://docs.aws.amazon.com/greengrass/v2/developerguide/install-gg-cli.html
+Requirements:
+You need to install few AWS components in your local workstation/PC:
+AWS CLI 2.2.30
+(ref: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+AWS Session Manager plugin for AWS CLI
+(ref: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
+AWS CDK 2.15.0
+(ref: https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html)
+Other opensource tools which needs to be installed:
+node v17.7.1
+typerscript 4.6.3
+git 2.33
+Clone gigithub repo in your local directory
+git clone https://github.com/gavazzc/RI_Industry_Kit ./ikit
+cd ./ikit/source/CDK
+run cdk deploy
 
-For each component that needs to be installed, enter to the folder of the component and run the following command :
 
-`sudo /greengrass/v2/bin/greengrass-cli deployment create --recipeDir recipes --artifactDir artifacts --merge "com.example.HelloWorld=1.0.0"`
-
-You need to change com.example.HelloWorld=1.0.0 with the component name and version. The name and version of the component must match the name recipe file under recipes folder of the component. Please see : https://docs.aws.amazon.com/greengrass/v2/developerguide/create-components.html
 
 ## SageMaker Edge Manager
 
