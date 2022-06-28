@@ -1,0 +1,36 @@
+---
+RecipeFormatVersion: 2020-01-25
+ComponentName: com.example.RESTApi
+ComponentVersion: '1.0.0'
+ComponentDescription: REST API component for Greengrass v2
+ComponentPublisher: "-"
+ComponentConfiguration:
+  DefaultConfiguration:
+    accessControl:
+      aws.greengrass.ipc.pubsub:
+        "com.example.RESTApi:pubsub:1":
+          policyDescription: Allows access to publish to test/topic.
+          operations:
+            - "aws.greengrass#PublishToTopic"
+          resources:
+            - "*"
+ComponentDependencies:
+  com.example.Store:
+    VersionRequirement: ^1.0.0
+    DependencyType: HARD
+Manifests:
+  - Platform:
+      os: linux
+    Artifacts:
+      - URI: s3://$BUCKETNAME$/$PATHZIP$
+        Unarchive: ZIP
+    Lifecycle:
+      setEnv:
+        IMAGE_DIR: '{artifacts:decompressedPath}/restapi/Images/'
+        PYTHONUNBUFFERED: "FALSE"
+      Install:
+        Script: "sudo yum install python3-pip -y \n python3 -m pip install starlette \n python3 -m pip install uvicorn \n python3 -m pip install gunicorn \n python3 -m pip install --user awsiotsdk"
+        RequiresPrivilege: true
+      Run:
+        Script: "pkill gunicorn \n /usr/local/bin/gunicorn -w 4 -k uvicorn.workers.UvicornWorker --log-level info --capture-output --error-logfile='/greengrass/v2/logs/gunicorn.log' -b 0.0.0.0:443 --env DB_PATH='{com.example.Store:configuration:/db_path}' rest:app --pythonpath {artifacts:decompressedPath}/restapi --certfile /tmp/rikit.crt --keyfile /tmp/rikit.key --ca-certs /tmp/rikit.ca"
+        RequiresPrivilege: true

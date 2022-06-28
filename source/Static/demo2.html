@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>
+      View Latest Frame
+    </title>
+</head>
+<body>
+    <iframe style="width:100%;height:800px;" src="https://%endpoint%/getLatestFrame" frameBorder="0"></iframe>    
+    
+    <script>
+      function timedRefresh(timeoutPeriod) {
+            setTimeout("location.reload(true);",timeoutPeriod);
+      }
+      window.onload = timedRefresh(7000);           
+    </script> 
+</body>  
+</html>

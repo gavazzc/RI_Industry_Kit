@@ -1,0 +1,84 @@
+#!/bin/bash
+# Installare Greengrass sulla macchina
+# Creare i thing group
+# Modifica del role di Greengrass per aggiungere permessi vari su S3
+# Scarica codice da github (non so come perchè mi servono le credenziali)
+# Compila il codice tramite la CLI
+# Upload componenti
+# Deploy componenti su questa macchina
+
+#Setup this parameters
+REGION=eu-central-1
+LOG="/tmp/boot-log.txt"
+cd /tmp
+
+echo "Starting boot script" > $LOG
+yum update -y
+sudo yum install -y jq
+
+#Install Greengrassv2
+echo "Downloading greengrass" >> $LOG
+curl -s https://d2s8p88vqu9w66.cloudfront.net/releases/greengrass-nucleus-latest.zip > greengrass-nucleus-latest.zip && unzip greengrass-nucleus-latest.zip -d GreengrassCore
+sudo yum install java -y
+echo "Java installed now running GGv2 installation" >> $LOG
+sudo -E java -Droot="/greengrass/v2" -Dlog.store=FILE -jar ./GreengrassCore/lib/Greengrass.jar --aws-region $REGION --thing-name ri-drone-mock --thing-group-name ri-drone-mock-group --component-default-user ggc_user:ggc_group --provision true --setup-system-service true --deploy-dev-tools true
+echo "GGv2 installation completed" >> $LOG
+
+#Installing certificates for the web server to run
+echo "Creating certificates" >> $LOG
+
+certificateArn=$(aws acm list-certificates --region eu-central-1 --query 'CertificateSummaryList[?DomainName==`rikit.com`].CertificateArn | [0]' | tr -d '"')
+ca=$(aws acm export-certificate --certificate-arn $certificateArn --passphrase 'pippo' --region 'eu-central-1' --query CertificateChain | tr -d '"')
+key=$(aws acm export-certificate --certificate-arn $certificateArn --passphrase 'pippo' --region 'eu-central-1' --query PrivateKey | tr -d '"')
+cert=$(aws acm export-certificate --certificate-arn $certificateArn --passphrase 'pippo' --region 'eu-central-1' --query Certificate | tr -d '"')
+echo "Creating certificate files" >> $LOG
+echo -e $ca > rikit.ca
+echo -e $key > rikit.key
+echo -e $cert > rikit.crt
+#removing password from the key file
+openssl rsa -in /tmp/rikit.key -out /tmp/rikit.key -passin pass:pippo
+
+
+#Find out which is the ARN of the role to Alias and create the role alias for GG to get permissions
+iotRoleArn=$(aws iam list-roles | jq '.Roles[] | select(.RoleName | startswith("RiIkitStack-riiotggv2role")) | .Arn'| tr -d '"')
+echo "IoT Role ARN selected $iotRoleArn" >> $LOG
+aws iot create-role-alias --role-alias ri-kit-ggv2-iot --role-arn $iotRoleArn --region "eu-central-1"
+echo "IoT role alias created" >> $LOG
+
+#Download the code for the GG component deployment
+bucket_id=$(aws s3api list-buckets | jq '.Buckets[] | select(.Name | startswith("riikitstack-rikitggv2")) | .Name' | tr -d '"')
+echo "S3 bucket selected" >> $LOGn
+mkdir src
+aws s3 sync s3://$bucket_id src
+echo "S3 sync completed in folder $(pwd)" >> $LOG
+
+#Configurations for installing components
+sudo yum install pip -y
+pip3 install boto3
+pip3 install PyYAML
+echo "Completed installation of pip, boto3 and pyYaml" >> $LOG
+account_id=$(aws sts get-caller-identity --query "Account" --output text)
+region_id=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone | sed 's/\(.*\)[a-z]/\1/')
+export region_id
+export account_id
+export bucket_id
+echo "Environment variabiles are now configured, region: $region_id account: $account_id bucket: $bucket_id" >> $LOG
+
+#Enter the S3 code and run the installer
+cd src/RI_Industry_Kit
+python3 create_components.py
+
+#Setup the frontend endpoint
+endpoint=$(aws elbv2 describe-load-balancers --region eu-central-1 --query "LoadBalancers[0].DNSName" | grep -i rikit | tr -d '"')
+bucket_id=$(aws s3api list-buckets | jq '.Buckets[] | select(.Name | startswith("riikitstack-rikitweb")) | .Name' | tr -d '"')
+aws s3 cp s3://$bucket_id/Web/demo1.html ./demo1.html
+aws s3 cp s3://$bucket_id/Web/demo2.html ./demo2.html
+aws s3 cp s3://$bucket_id/Web/index.html ./index.html
+from="%endpoint%"
+to=$endpoint
+sed -i "s/$from/$to/g" "demo1.html"
+sed -i "s/$from/$to/g" "demo2.html"
+sed -i "s/$from/$to/g" "index.html"
+aws s3 cp ./demo1.html s3://$bucket_id/Web/demo1.html
+aws s3 cp ./demo2.html s3://$bucket_id/Web/demo2.html
+aws s3 cp ./index.html s3://$bucket_id/Web/index.html

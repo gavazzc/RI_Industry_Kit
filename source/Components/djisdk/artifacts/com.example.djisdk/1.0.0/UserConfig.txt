@@ -1,0 +1,5 @@
+app_id : 1106654
+app_key : d5f8799fb3f8b316804fcc7e551966be3cb1bd1a0792a4a31300ae41033c3051
+device : /dev/ttyTHS1
+baudrate : 230400
+acm_port : /dev/ttyACM0
