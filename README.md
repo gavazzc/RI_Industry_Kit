@@ -88,20 +88,30 @@ DJI has a propriety format which is called as FlightRecord file. This component 
 # Deployment
 
 Requirements:
-You need to install few AWS components in your local workstation/PC:
-AWS CLI 2.2.30
-(ref: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+You need to install few AWS components in your local workstation/PC:  AWS CLI 2.2.30  (ref: https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+
 AWS Session Manager plugin for AWS CLI
+
 (ref: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
+
 AWS CDK 2.15.0
+
 (ref: https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html)
+
 Other opensource tools which needs to be installed:
+
 node v17.7.1
+
 typerscript 4.6.3
+
 git 2.33
+
 Clone gigithub repo in your local directory
+
 git clone https://github.com/gavazzc/RI_Industry_Kit ./ikit
+
 cd ./ikit/source/CDK
+
 run cdk deploy
 
 
