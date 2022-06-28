@@ -16,6 +16,10 @@ Here below an example of hotspots in our sample dataset (red bounding boxes)
 In cv-model/coco128/augmented_train folder your will find a small dataset with 43 aerial thermal images augmented with flip and contrast in oder to have 3X images. 
 In cv-model/coco128/augmented_train_label you will find labels in JSON/yolo annotation format: Class, XY for bounding box center, width and height of each BB. Remember YOLO annotation each value (except for class) is expressed in a decimal number expressing percentage (0 to 1) of total image size (416x416 pixels for this dataset).
 
+Class 0 = Anomaly ("white hotspot")
+
+Class 1 = PV Panel String
+
 
 ## Architecture
 
@@ -23,10 +27,8 @@ In cv-model/coco128/augmented_train_label you will find labels in JSON/yolo anno
 
 ## Components provided
 
-With AWS IoT Greengrass, Version 2, you can arbitrarily develop and deploy modular software in units called components. Each custom component require at least a recipe (a YAML or JSON document) to describe start/stop procedure and potential dependecies on other components and a folder with artifact, where code is stored. In the folder named "components" you will find all the custom components required including the machine learning model (trained with the sample dataset) and the inference code. These component must be created and deployed in AWS IoT using the create_components python script.
-Here below a quick overview of steps required to provision the industry kit
-
-![Industry Kit Deployment](Architecture/IKdeploy.png)
+With AWS IoT Greengrass, Version 2, you can arbitrarily develop and deploy modular software in units called components. Each custom component require at least a recipe (a YAML or JSON document) to describe start/stop procedure and potential dependecies on other components and a folder with artifact, where code is stored. In the folder named "components" you will find all the custom components required including the machine learning model (trained with the sample dataset) and the inference code. 
+All the stack will be deployed with CDK (last section)
 
 ## Green Grass v2 Custom Components
 
@@ -98,7 +100,7 @@ AWS CDK 2.15.0
 
 (ref: https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html)
 
-Other opensource tools which needs to be installed:
+Other opensource required:
 
 node v17.7.1
 
@@ -106,7 +108,7 @@ typerscript 4.6.3
 
 git 2.33
 
-Clone gigithub repo in your local directory
+Clone github repo in your local directory
 
 git clone https://github.com/gavazzc/RI_Industry_Kit ./ikit
 
