@@ -96,17 +96,17 @@ AWS Session Manager plugin for AWS CLI
 
 (ref: https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
 
-AWS CDK 2.15.0
+AWS CDK 2.15.0 (check with cdk --version)
 
 (ref: https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html)
 
 Other opensource required:
 
-node v17.7.1
+node v17.7.1 (check with node --version)
+ 
+typerscript 4.6.3 (check with tsc --version)
 
-typerscript 4.6.3
-
-git 2.33
+git 2.33 (check with git --version)
 
 Clone github repo in your local directory
 
@@ -114,7 +114,16 @@ git clone https://github.com/gavazzc/RI_Industry_Kit ./ikit
 
 cd ./ikit/source/CDK
 
-run cdk deploy
+export AWS_DEFAULT_REGION="eu-central-11" 
+export AWS_ACCESS_KEY_ID="The AccessKeyId of your account"
+export AWS_SECRET_ACCESS_KEY=" SecretAccessKey of your account"
+
+npm install
+npm i @aws-cdk/aws-elasticloadbalancingv2
+npm i @aws-cdk/aws-cloudfront-origins
+npm i @aws-cdk/aws-elasticloadbalancingv2-targets
+
+cdk deploy
 
 
 
