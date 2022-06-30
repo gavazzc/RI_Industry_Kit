@@ -114,13 +114,18 @@ git clone https://github.com/gavazzc/RI_Industry_Kit ./ikit
 
 cd ./ikit/source/CDK
 
-export AWS_DEFAULT_REGION="eu-central-11" 
+export AWS_DEFAULT_REGION="eu-central-1" 
+
 export AWS_ACCESS_KEY_ID="The AccessKeyId of your account"
+
 export AWS_SECRET_ACCESS_KEY=" SecretAccessKey of your account"
 
 npm install
+
 npm i @aws-cdk/aws-elasticloadbalancingv2
+
 npm i @aws-cdk/aws-cloudfront-origins
+
 npm i @aws-cdk/aws-elasticloadbalancingv2-targets
 
 cdk deploy
